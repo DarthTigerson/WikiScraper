@@ -17,6 +17,7 @@ def get_wikipedia_page_name(url):
     return name
 
 def save_soup_to_file(soup, name):
+    print(f"Saving: {name}")
     with open(f"Data/{name}.txt", "w") as file:
         file.write(soup.find('body').get_text())
         file.close()
@@ -41,6 +42,7 @@ def add_to_dictionary(url,searched=False):
             break
 
     if add:
+        print(f'Adding: {url}')
         with open("Data/dict.csv", "a") as file:
             file.write(f"{url},{name},{searched}\n")
             file.close()
@@ -56,12 +58,14 @@ def dictionary_search_complete(row):
 
 def main_scraper(url):
     try:
+        print(f"Scraping: {url}")
         soup = get_wikipedia_page_soup(url)
         name = get_wikipedia_page_name(url)
         scrape_urls_from_soup(soup)
         save_soup_to_file(soup, name)
         return True
     except:
+        print(f"Error: {url}")
         return False
 
 
