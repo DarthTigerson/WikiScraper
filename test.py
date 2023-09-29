@@ -16,9 +16,10 @@ def get_wikipedia_page_name(url):
     #name = name.replace(",", " ")
     return name
 
-def save_soup_to_file(soup, name):
+def save_soup_to_file(soup, name, url):
     print(f"Saving: {name}")
-    with open(f"Data/{name}.html", "w") as file:
+    url = url[1:]
+    with open(f"{url}.html", "w") as file:
         file.write(str(soup.find('body')))
         file.close()
 
@@ -55,7 +56,7 @@ def return_dictionar_cell_data(row):
 def dictionary_search_complete(row):
     df = pd.read_csv("Data/dict.csv", delimiter='|')
     df.iloc[row,2] = True
-    df.to_csv("Data/dict.csv", index=False)
+    df.to_csv("Data/dict.csv", index=False, sep='|')
 
 def main_scraper(url):
     try:
@@ -63,23 +64,24 @@ def main_scraper(url):
         soup = get_wikipedia_page_soup(url)
         name = get_wikipedia_page_name(url)
         scrape_urls_from_soup(soup)
-        save_soup_to_file(soup, name)
+        save_soup_to_file(soup, name, url)
         return True
     except:
         print(f"Error: {url}")
         return False
 
-
 def main():
     counter = 0
 
     while True:
-        url = return_dictionar_cell_data(counter)
-        complete = main_scraper(url)
+        state = return_dictionar_cell_data(counter)
+        if state != 'True':
+            url = return_dictionar_cell_data(counter)
+            complete = main_scraper(url)
 
-        if complete:
-            dictionary_search_complete(counter)
-            print(f"Completed: {url}")
+            if complete:
+                dictionary_search_complete(counter)
+                print(f"Completed: {url}")
 
         counter += 1
 
