@@ -13,13 +13,13 @@ def get_wikipedia_page_name(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
     name = soup.find(id="firstHeading").text
-    name = name.replace(",", " ")
+    #name = name.replace(",", " ")
     return name
 
 def save_soup_to_file(soup, name):
     print(f"Saving: {name}")
-    with open(f"Data/{name}.txt", "w") as file:
-        file.write(soup.find('body').get_text())
+    with open(f"Data/{name}.html", "w") as file:
+        file.write(str(soup.find('body')))
         file.close()
 
 def scrape_urls_from_soup(soup):
@@ -30,29 +30,30 @@ def scrape_urls_from_soup(soup):
                 add_to_dictionary(url)
 
 def add_to_dictionary(url,searched=False):
-    add = False
+    add = True
     name = get_wikipedia_page_name(url)
 
-    # searches url in dictionary csv file and returns if the url already exists
-    df = pd.read_csv("Data/dict.csv")
-    add = True
-    for i in range(len(df)):
-        if df.iloc[i,0] == url:
+    df = pd.read_csv('Data/dict.csv', delimiter='|')
+    column_list = df['name'].tolist()
+
+    for single_list in column_list:
+        if single_list == name:
+            print(f'URL already in dictionary: {url}')
             add = False
             break
 
-    if add:
+    if add == True:
         print(f'Adding: {url}')
         with open("Data/dict.csv", "a") as file:
-            file.write(f"{url},{name},{searched}\n")
+            file.write(f"{url}|{name}|{searched}\n")
             file.close()
         
 def return_dictionar_cell_data(row):
-    df = pd.read_csv("Data/dict.csv")
+    df = pd.read_csv("Data/dict.csv", delimiter='|')
     return df.iloc[row,0]
 
 def dictionary_search_complete(row):
-    df = pd.read_csv("Data/dict.csv")
+    df = pd.read_csv("Data/dict.csv", delimiter='|')
     df.iloc[row,2] = True
     df.to_csv("Data/dict.csv", index=False)
 
