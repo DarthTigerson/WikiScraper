@@ -114,5 +114,5 @@ async def main(db: Session = Depends(get_db)):
 @router.on_event("startup")
 async def startup_event():
     print('Hello there')
-    #await add_new_url_to_dictionary("Space", db=SessionLocal())
+    await add_new_url_to_dictionary("Space", db=SessionLocal())
     await main(db=SessionLocal())
