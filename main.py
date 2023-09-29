@@ -31,27 +31,48 @@ def scrape_urls_from_soup(soup):
                 add_to_dictionary(url)
 
 def add_to_dictionary(url,searched=False):
-    add = True
     name = get_wikipedia_page_name(url)
 
     df = pd.read_csv('Data/dict.csv', delimiter='|')
-    column_list = df['name'].tolist()
+    column_set = set(df['name'].tolist())
 
-    for single_list in column_list:
-        if single_list == name:
-            print(f'URL already in dictionary: {url}')
-            add = False
-            break
-
-    if add == True:
+    if name in column_set:
+        print(f"Already in dictionary: {name}")
+    else:
         print(f'Adding: {url}')
         with open("Data/dict.csv", "a") as file:
             file.write(f"{url}|{name}|{searched}\n")
             file.close()
         
-def return_dictionar_cell_data(row):
+def return_dictionar_cell_data(row,column=0):
     df = pd.read_csv("Data/dict.csv", delimiter='|')
-    return df.iloc[row,0]
+    return df.iloc[row,column]
+
+def locate_key(file_data, key):
+        char_location = file_data.find(key)
+        return char_location
+
+def remove_characters_left(file_data, char_location):
+    return file_data[char_location:]
+
+def get_characters_till(file_data, char_location):
+    return file_data[:char_location]
+
+def html_file_cleaner(url):
+    file_path = url[1:]
+    key1 = '<div class="noprint" id="siteSub">'
+    key2 = '<h2><span class="mw-headline" id="References">References</span>'
+
+    with open(f"{file_path}.html", "r") as file:
+        data = file.read()
+        file.close()
+    
+    data = remove_characters_left(data, locate_key(data, key1))
+    data = get_characters_till(data, locate_key(data, key2))
+
+    with open(f"{file_path}.html", "w") as file:
+        file.write(data)
+        file.close()
 
 def dictionary_search_complete(row):
     df = pd.read_csv("Data/dict.csv", delimiter='|')
@@ -74,12 +95,13 @@ def main():
     counter = 0
 
     while True:
-        state = return_dictionar_cell_data(counter)
-        if state != 'True':
+        state = return_dictionar_cell_data(counter,2)
+        if state != True:
             url = return_dictionar_cell_data(counter)
             complete = main_scraper(url)
 
             if complete:
+                html_file_cleaner(url)
                 dictionary_search_complete(counter)
                 print(f"Completed: {url}")
 
