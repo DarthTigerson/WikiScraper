@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import SessionLocal
+from fastapi_utils.tasks import repeat_every
 from models import Dictionary
 from bs4 import BeautifulSoup
 from time import sleep
@@ -96,30 +97,23 @@ async def html_soup_data_cleaner(soup):
 @router.get('/main_scraper/{url}')
 async def main_scraper(url, db: Session = Depends(get_db)):
     print(f'Running main scraper on: {url}')
-    default_time = 15
     try:
-        time = default_time
         await get_wikipedia_page_name(url, db=db)
         await scrape_urls_from_soup(url, db=db)
         await save_soup_to_database(url, db=db)
-        sleep(time)
         return True
     except:
-        sleep(time)
-        time += default_time
         return False
     
 @router.get('/main')
 async def main(db: Session = Depends(get_db)):
-    while True:
-        print('Running main scraper')
-        url_entry = db.query(Dictionary).order_by(Dictionary.id.asc()).filter(Dictionary.searched == False).first()
-        if url_entry:
-            await main_scraper(url_entry.url, db=db)
-        else:
-            break
+    print('Running main scraper')
+    url_entry = db.query(Dictionary).order_by(Dictionary.id.asc()).filter(Dictionary.searched == False).first()
+    if url_entry:
+        await main_scraper(url_entry.url, db=db)
 
 @router.on_event("startup")
+@repeat_every(seconds=10)
 async def startup_event():
     print('Hello there')
     await add_new_url_to_dictionary("Space", db=SessionLocal())
