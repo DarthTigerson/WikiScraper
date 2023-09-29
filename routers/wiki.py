@@ -22,7 +22,8 @@ def get_db():
 async def load_wiki_page(name, db: Session = Depends(get_db)):
     print(f'Loading: {name}')
     db_data = db.query(Dictionary).filter(Dictionary.title == name).first()
-    if db_data:
-        return db_data
+    page = zlib.decompress(db_data.page_content)
+    if db_data is not None:
+        return page
     else:
         return None
