@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from database import SessionLocal
 from models import Dictionary
 from bs4 import BeautifulSoup
-import requests
+import requests, time
 
 router = APIRouter(
     prefix="/scraper",
@@ -95,11 +95,16 @@ async def html_soup_data_cleaner(soup):
 @router.get('/main_scraper/{url}')
 async def main_scraper(url, db: Session = Depends(get_db)):
     print(f'Running main scraper on: {url}')
-
-    await get_wikipedia_page_name(url, db=db)
-    await scrape_urls_from_soup(url, db=db)
-    await save_soup_to_database(url, db=db)
-    return True
+    time = 15
+    try:
+        await get_wikipedia_page_name(url, db=db)
+        await scrape_urls_from_soup(url, db=db)
+        await save_soup_to_database(url, db=db)
+        return True
+    except:
+        time.delay(time)
+        time += 15
+        return False
     
 @router.get('/main')
 async def main(db: Session = Depends(get_db)):
