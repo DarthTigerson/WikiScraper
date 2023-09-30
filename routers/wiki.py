@@ -2,9 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database import SessionLocal
 from models import Dictionary
-from bs4 import BeautifulSoup
-from time import sleep
-import requests, time, zlib
+import zlib
 
 router = APIRouter(
     prefix="/wiki",
