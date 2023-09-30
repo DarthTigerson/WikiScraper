@@ -39,7 +39,7 @@ async def get_wiki_page_list(db: Session = Depends(get_db)):
 async def return_unscraped_wiki_pages(db: Session = Depends(get_db)):
     db_data = db.query(Dictionary).filter(Dictionary.searched == False).all()
     if db_data is not None:
-        return [data.title for data in db_data]
+        return [data.url for data in db_data]
     else:
         return None
     
