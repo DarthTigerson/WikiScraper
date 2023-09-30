@@ -27,10 +27,26 @@ async def get_wiki_page(name, db: Session = Depends(get_db)):
     else:
         return None
     
-@router.get('/get_wiki_page_list/{searched}')
-async def get_wiki_page_list(searched: bool, db: Session = Depends(get_db)):
-    db_data = db.query(Dictionary).filter(Dictionary.searched == searched).all()
+@router.get('/get_wiki_page_list/')
+async def get_wiki_page_list(db: Session = Depends(get_db)):
+    db_data = db.query(Dictionary).filter(Dictionary.searched == True).all()
     if db_data is not None:
         return [data.title for data in db_data]
+    else:
+        return None
+    
+@router.get('/return_unscraped_wiki_pages/')
+async def return_unscraped_wiki_pages(db: Session = Depends(get_db)):
+    db_data = db.query(Dictionary).filter(Dictionary.searched == False).all()
+    if db_data is not None:
+        return [data.title for data in db_data]
+    else:
+        return None
+    
+@router.get('/return_wiki_url_list/')
+async def return_wiki_url_list(db: Session = Depends(get_db)):
+    db_data = db.query(Dictionary).all()
+    if db_data is not None:
+        return [{'name': data.title, 'url': f'https://wiki.example.com/{data.title}', 'searched': data.searched} for data in db_data]
     else:
         return None
