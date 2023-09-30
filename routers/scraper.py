@@ -102,7 +102,7 @@ async def main(db: Session = Depends(get_db)):
         await main_scraper(url_entry.url, db=db)
 
 @router.on_event("startup")
-@repeat_every(seconds=10)
+@repeat_every(seconds=20)
 async def startup_event():
     print('Hello there')
     await add_new_url_to_dictionary("Space", db=SessionLocal())
