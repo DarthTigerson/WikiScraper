@@ -103,6 +103,8 @@ async def main_scraper(url, db: Session = Depends(get_db)):
         await save_soup_to_database(url, db=db)
         return True
     except:
+        print('Error, waiting 15 seconds')
+        sleep(15)
         return False
     
 @router.get('/main')
