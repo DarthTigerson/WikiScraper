@@ -5,7 +5,7 @@ from fastapi_utils.tasks import repeat_every
 from models import Dictionary
 from bs4 import BeautifulSoup
 from time import sleep
-import requests, zlib
+import requests, zlib, asyncio
 
 router = APIRouter(
     prefix="/scraper",
@@ -88,7 +88,7 @@ async def main_scraper(url, db: Session = Depends(get_db)):
     print(f'Running main scraper on: {url}')
     try:
         await get_wikipedia_page_name(url, db=db)
-        #await scrape_urls_from_soup(url, db=db)
+        await scrape_urls_from_soup(url, db=db)
         await save_soup_to_database(url, db=db)
         #sleep(1)
         return True
@@ -111,8 +111,25 @@ async def main(db: Session = Depends(get_db)):
             db.close()
             db = SessionLocal()
 
+async def main_concurrent(db: Session = Depends(get_db)):
+    tasks = []
+    while True:
+        try:
+            url_entries = db.query(Dictionary).order_by(Dictionary.id.asc()).filter(Dictionary.searched == False).limit(10).all()
+            if url_entries:
+                for url_entry in url_entries:
+                    tasks.append(main_scraper(url_entry.url, db))
+                await asyncio.gather(*tasks)
+                tasks = []
+        except:
+            print('Error, waiting 15 seconds')
+            sleep(15)
+            db.rollback()
+            db.close()
+            db = SessionLocal()
+
 @router.on_event("startup")
 async def startup_event():
     print('Hello there')
     await add_new_url_to_dictionary("Space", db=SessionLocal())
-    await main(db=SessionLocal())
+    await main_concurrent(db=SessionLocal())
