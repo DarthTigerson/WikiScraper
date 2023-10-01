@@ -97,14 +97,13 @@ async def main_scraper(url, db: Session = Depends(get_db)):
         return False
 
 async def main(db: Session = Depends(get_db)):
-    async with SessionLocal() as session:
-        while True:
-            try:
-                url_entry = session.query(Dictionary).order_by(Dictionary.id.asc()).filter(Dictionary.searched == False).first()
-                if url_entry:
-                    await main_scraper(url_entry.url, db=session)
-            except:
-                sleep(30)
+    while True:
+        try:
+            url_entry = session.query(Dictionary).order_by(Dictionary.id.asc()).filter(Dictionary.searched == False).first()
+            if url_entry:
+                await main_scraper(url_entry.url, db=session)
+        except:
+            sleep(30)
 
 @router.on_event("startup")
 async def startup_event():
