@@ -98,9 +98,16 @@ async def main_scraper(url, db: Session = Depends(get_db)):
 
 async def main(db: Session = Depends(get_db)):
     while True:
-        url_entry = db.query(Dictionary).order_by(Dictionary.id.asc()).filter(Dictionary.searched == False).first()
-        if url_entry:
-            await main_scraper(url_entry.url, db=db)
+        try:
+            url_entry = db.query(Dictionary).order_by(Dictionary.id.asc()).filter(Dictionary.searched == False).first()
+            if url_entry:
+                await main_scraper(url_entry.url, db=db)
+        except:
+            print('Error, waiting 15 seconds')
+            sleep(15)
+            db.rollback()
+            db.close()
+            db = SessionLocal()
 
 @router.on_event("startup")
 async def startup_event():
