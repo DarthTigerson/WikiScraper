@@ -90,6 +90,7 @@ async def main_scraper(url, db: Session = Depends(get_db)):
         await get_wikipedia_page_name(url, db=db)
         await scrape_urls_from_soup(url, db=db)
         await save_soup_to_database(url, db=db)
+        sleep(1)
         return True
     except Exception as e:
         # print error that occurred
