@@ -98,9 +98,9 @@ async def main_scraper(url, db: Session = Depends(get_db)):
 
 async def main(db: Session = Depends(get_db)):
     while True:
-        url_entry = session.query(Dictionary).order_by(Dictionary.id.asc()).filter(Dictionary.searched == False).first()
+        url_entry = db.query(Dictionary).order_by(Dictionary.id.asc()).filter(Dictionary.searched == False).first()
         if url_entry:
-            await main_scraper(url_entry.url, db=session)
+            await main_scraper(url_entry.url, db=db)
 
 @router.on_event("startup")
 async def startup_event():
