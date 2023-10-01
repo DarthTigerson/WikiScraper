@@ -112,15 +112,14 @@ async def main(db: Session = Depends(get_db)):
             db = SessionLocal()
 
 async def main_concurrent(db: Session = Depends(get_db)):
-    tasks = []
     while True:
         try:
+            tasks = []
             url_entries = db.query(Dictionary).order_by(Dictionary.id.asc()).filter(Dictionary.searched == False).limit(10).all()
             if url_entries:
                 for url_entry in url_entries:
                     tasks.append(main_scraper(url_entry.url, db))
                 await asyncio.gather(*tasks)
-                tasks = []
         except:
             print('Error, waiting 15 seconds')
             sleep(15)
