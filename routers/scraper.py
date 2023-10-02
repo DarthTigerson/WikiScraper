@@ -46,7 +46,7 @@ async def scrape_urls_from_soup(url, db: Session = Depends(get_db)):
     for link in soup.find_all("a"):
         url = link.get("href")
         if url != None and url != "/wiki/Main_Page":
-            if url.startswith("/wiki/") and not ":" in url and not "#" in url:
+            if url.startswith("/wiki/") and not "#" in url:
                 url = url.replace("/wiki/", "")
                 await add_new_url_to_dictionary(url, db)
 
@@ -130,5 +130,5 @@ async def main_concurrent(db: Session = Depends(get_db)):
 @router.on_event("startup")
 async def startup_event():
     print('Hello there')
-    await add_new_url_to_dictionary("Space", db=SessionLocal())
+    await add_new_url_to_dictionary("Wikipedia:Contents/A-Z_index", db=SessionLocal())
     await main_concurrent(db=SessionLocal())
